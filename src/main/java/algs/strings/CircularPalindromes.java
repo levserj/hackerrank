@@ -8,6 +8,8 @@ import java.util.Arrays;
 
 public class CircularPalindromes {
 
+    // TODO: 26.04.18 Optimise - not passing tests by time
+
     static int[] circularPalindromes(String s) {
         int[] palindromes = new int[s.length()];
         for (int i = 0; i < s.length(); i++) {
