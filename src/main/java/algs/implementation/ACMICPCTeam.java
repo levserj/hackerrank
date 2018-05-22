@@ -1,8 +1,5 @@
 package algs.implementation;
 
-import java.math.BigInteger;
-import java.util.BitSet;
-
 /**
  * @author Sergiy Levchynskyi
  */
