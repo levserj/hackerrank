@@ -6,8 +6,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
@@ -17,9 +15,9 @@ public class QueensAttack2 {
     static int queensAttack(int n, int k, int r_q, int c_q, int[][] obstacles) {
         Set<Pair<Integer, Integer>> obstaclesSet = convertArrToSet(obstacles);
         obstaclesSet = getObstaclesLyingOnPossibleMove(obstaclesSet, r_q, c_q);
-        int overallmoves = getTotalPossibleMoves(n, r_q, c_q);
+        int overallMoves = getTotalPossibleMoves(n, r_q, c_q);
         int blockedMoves = obstaclesSet.stream().mapToInt(p -> getBlockedMovesCount(p, r_q, c_q, n)).sum();
-        return overallmoves - blockedMoves;
+        return overallMoves - blockedMoves;
     }
 
     private static Set<Pair<Integer, Integer>> convertArrToSet(int[][] arr) {
@@ -32,9 +30,31 @@ public class QueensAttack2 {
 
     private static Set<Pair<Integer, Integer>> getObstaclesLyingOnPossibleMove(Set<Pair<Integer, Integer>> obstacles, int r, int c) {
         Set<Pair<Integer, Integer>> result = new HashSet<>();
-        for (Pair<Integer, Integer> obstacle : obstacles) {
-            if (obstacle.getKey().equals(r) || obstacle.getValue().equals(c) || liesOnDiagonalPossibleMove(obstacle, r, c)) {
-                result.add(obstacle);
+        for (Pair<Integer, Integer> found : obstacles) {
+            if (found.getKey().equals(r)) {
+                for (Pair<Integer, Integer> existing : result) {
+                    if (existing.getKey().equals(found.getKey())) {
+                        pickClosestHorizontalObstacle(existing, found, result, c);
+                    }
+                }
+                result.add(found);
+
+            } else if (found.getValue().equals(c)) {
+                for (Pair<Integer, Integer> existing : result) {
+                    if (existing.getValue().equals(found.getValue())) {
+                        pickClosestVerticalObstacle(existing, found, result, r);
+                    }
+                }
+                result.add(found);
+
+            } else if (liesOnDiagonalPossibleMove(found, r, c)) {
+                for (Pair<Integer, Integer> existing : result) {
+                    if (liesOnDiagonalPossibleMove(existing, r, c)) {
+                        pickClosestDiagonalObstacle(existing, found, result, r, c);
+                    }
+                }
+                result.add(found);
+
             }
         }
         return result;
@@ -42,6 +62,31 @@ public class QueensAttack2 {
 
     private static boolean liesOnDiagonalPossibleMove(Pair<Integer, Integer> obstacle, int r, int c) {
         return Math.abs(obstacle.getKey() - r) == Math.abs(obstacle.getValue() - c);
+    }
+
+    private static void pickClosestHorizontalObstacle(Pair<Integer, Integer> existing, Pair<Integer, Integer> found, Set<Pair<Integer, Integer>> obstacles, int c) {
+        if ((existing.getValue() > c && found.getValue() > c && existing.getValue() > found.getValue()) ||
+                (existing.getValue() < c && found.getValue() < c && existing.getValue() < found.getValue())
+        ) {
+            obstacles.remove(existing);
+        }
+    }
+
+    private static void pickClosestVerticalObstacle(Pair<Integer, Integer> existing, Pair<Integer, Integer> found, Set<Pair<Integer, Integer>> obstacles, int r) {
+        if ((existing.getKey() > r && found.getKey() > r && existing.getKey() > found.getKey()) ||
+                (existing.getKey() < r && found.getKey() < r && existing.getKey() < found.getKey())) {
+            obstacles.remove(existing);
+        }
+    }
+
+    private static void pickClosestDiagonalObstacle(Pair<Integer, Integer> existing, Pair<Integer, Integer> found, Set<Pair<Integer, Integer>> obstacles, int r, int c) {
+        if ((existing.getKey() > r && found.getKey() > r && existing.getValue() > c && found.getValue() > c && existing.getKey() > found.getKey()) || // upper right
+                (existing.getKey() < r && found.getKey() < r && existing.getValue() < c && found.getValue() < c && existing.getKey() < found.getKey()) || // lower left
+                (existing.getKey() < r && found.getKey() < r && existing.getValue() > c && found.getValue() > c && existing.getValue() > found.getValue()) || // lower right
+                (existing.getKey() > r && found.getKey() > r && existing.getValue() < c && found.getValue() < c && existing.getValue() < found.getValue()) // upper left
+        ) {
+            obstacles.remove(existing);
+        }
     }
 
     private static int getBlockedMovesCount(Pair<Integer, Integer> obstacle, int r, int c, int n) {
@@ -82,7 +127,6 @@ public class QueensAttack2 {
         return count;
     }
 
-
     static int getTotalPossibleMoves(int n, int row, int col) {
         int a = getPositiveOrZero(Math.min(row - 1, col - 1));
         int b = getPositiveOrZero(Math.min(n - row, col - 1));
@@ -95,56 +139,11 @@ public class QueensAttack2 {
         return x > 0 ? x : 0;
     }
 
-/*    public static void main(String[] args) {
-        System.out.println(queensAttack(5, 3, 4, 3, new int[][]{{4, 2}, {5, 5}, {2, 3}}));
-    }*/
-
-    private static Scanner scanner = null;
-
-    static {
-        try {
-            scanner = new Scanner(new File("/home/sl/IdeaProjects/hackerrank/src/main/resources/QueensAttack2.testCase6.txt"));
-            System.out.println(new File("/home/sl/IdeaProjects/hackerrank/src/main/resources/QueensAttack2.testCase6.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) throws IOException {
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
 
-        String[] nk = scanner.nextLine().split(" ");
+        System.out.println(queensAttack(5, 3, 4,3, new int[][]{{3,2}, {4, 2}, {5, 5}, {2, 3}}));
 
-        int n = Integer.parseInt(nk[0]);
 
-        int k = Integer.parseInt(nk[1]);
-
-        String[] r_qC_q = scanner.nextLine().split(" ");
-
-        int r_q = Integer.parseInt(r_qC_q[0]);
-
-        int c_q = Integer.parseInt(r_qC_q[1]);
-
-        int[][] obstacles = new int[k][2];
-
-        for (int i = 0; i < k; i++) {
-            String[] obstaclesRowItems = scanner.nextLine().split(" ");
-            scanner.skip("(\r\n|[\n\r\u2028\u2029\u0085])?");
-
-            for (int j = 0; j < 2; j++) {
-                int obstaclesItem = Integer.parseInt(obstaclesRowItems[j]);
-                obstacles[i][j] = obstaclesItem;
-            }
-        }
-
-        int result = queensAttack(n, k, r_q, c_q, obstacles);
-
-        bufferedWriter.write(String.valueOf(result));
-        bufferedWriter.newLine();
-
-        bufferedWriter.close();
-
-        scanner.close();
     }
 
 }
